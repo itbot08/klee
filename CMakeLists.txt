@@ -463,7 +463,7 @@ if (HAVE_SYS_CAPABILITY_H)
     NAMES cap
     DOC "libcap library"
   )
-  if (NOT LIBCAP_LIBRARIES)
+  if (NOT LIBCAP_LIBRARIES AND NOT CMAKE_SYSTEM_NAME STREQUAL "FreeBSD")
     message(FATAL_ERROR "Found \"sys/capability.h\" but could not find libcap")
   endif()
 else()
