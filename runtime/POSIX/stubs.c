@@ -8,6 +8,7 @@
 //===----------------------------------------------------------------------===//
 
 #define _XOPEN_SOURCE 700
+#include "FreeBSD.h"
 
 #include <errno.h>
 #include <limits.h>
@@ -18,10 +19,11 @@
 #include <time.h>
 #include <unistd.h>
 #include <utime.h>
-#include <utmp.h>
+#include <utmpx.h>
 #include <sys/mman.h>
 #include <sys/resource.h>
 #include <sys/stat.h>
+#include <sys/time.h>
 #include <sys/times.h>
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -186,6 +188,7 @@ clock_t times(struct tms *buf) {
   return 0;
 }
 
+#ifndef __FreeBSD__
 struct utmpx *getutxent(void) __attribute__((weak));
 struct utmpx *getutxent(void) {
   return (struct utmpx*) getutent();
@@ -206,6 +209,7 @@ int utmpxname(const char *file) {
   utmpname(file);
   return 0;
 }
+#endif
 
 int euidaccess(const char *pathname, int mode) __attribute__((weak));
 int euidaccess(const char *pathname, int mode) {
@@ -240,7 +244,7 @@ int strverscmp (__const char *__s1, __const char *__s2) {
   return strcmp(__s1, __s2); /* XXX no doubt this is bad */
 }
 
-#if __GLIBC_PREREQ(2, 25)
+#if __GLIBC_PREREQ(x, y)
 #define gnu_dev_type	dev_t
 #else
 #define gnu_dev_type	unsigned long long int
@@ -403,8 +407,14 @@ int umount2(const char *target, int flags) {
   return -1;
 }
 
+#ifndef __FreeBSD__
 int swapon(const char *path, int swapflags) __attribute__((weak));
 int swapon(const char *path, int swapflags) {
+#else
+int swapon(const char *path)__attribute__((weak));
+int swapon(const char *path) 
+{
+#endif
   klee_warning("ignoring (EPERM)");
   errno = EPERM;
   return -1;
@@ -423,15 +433,25 @@ int setgid(gid_t gid) {
   return 0;
 }
 
+#ifndef __FreeBSD__
 int setgroups(size_t size, const gid_t *list) __attribute__((weak));
 int setgroups(size_t size, const gid_t *list) {
+#else
+int setgroups(int size, const gid_t *list) __attribute__((weak));
+int setgroups(int size, const gid_t *list) {
+#endif
   klee_warning("ignoring (EPERM)");
   errno = EPERM;
   return -1;
 }
 
+#ifndef __FreeBSD__
 int sethostname(const char *name, size_t len) __attribute__((weak));
 int sethostname(const char *name, size_t len) {
+#else
+int sethostname(const char *name, int len) __attribute__((weak));
+int sethostname(const char *name, int len) {
+#endif
   klee_warning("ignoring (EPERM)");
   errno = EPERM;
   return -1;
@@ -444,15 +464,20 @@ int setpgid(pid_t pid, pid_t pgid) {
   return -1;
 }
 
+#ifndef __FreeBSD__
 int setpgrp(void) __attribute__((weak));
 int setpgrp(void) {
+#else
+int setpgrp(pid_t a, pid_t b) __attribute__((weak));
+int setpgrp(pid_t a, pid_t b) {
+#endif
   klee_warning("ignoring (EPERM)");
   errno = EPERM;
   return -1;
 }
 
-int setpriority(__priority_which_t which, id_t who, int prio) __attribute__((weak));
-int setpriority(__priority_which_t which, id_t who, int prio) {
+int setpriority(int which, int who, int prio) __attribute__((weak));
+int setpriority(int which, int who, int prio) {
   klee_warning("ignoring (EPERM)");
   errno = EPERM;
   return -1;
@@ -472,15 +497,15 @@ int setresuid(uid_t ruid, uid_t euid, uid_t suid) {
   return -1;
 }
 
-int setrlimit(__rlimit_resource_t resource, const struct rlimit *rlim) __attribute__((weak));
-int setrlimit(__rlimit_resource_t resource, const struct rlimit *rlim) {
+int setrlimit(int resource, const struct rlimit *rlim) __attribute__((weak));
+int setrlimit(int resource, const struct rlimit *rlim) {
   klee_warning("ignoring (EPERM)");
   errno = EPERM;
   return -1;
 }
 
-int setrlimit64(__rlimit_resource_t resource, const struct rlimit64 *rlim) __attribute__((weak));
-int setrlimit64(__rlimit_resource_t resource, const struct rlimit64 *rlim) {
+int setrlimit64(int resource, const struct rlimit64 *rlim) __attribute__((weak));
+int setrlimit64(int resource, const struct rlimit64 *rlim) {
   klee_warning("ignoring (EPERM)");
   errno = EPERM;
   return -1;

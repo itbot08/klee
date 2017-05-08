@@ -14,8 +14,16 @@
 #error "_LARGEFILE64_SOURCE should be defined"
 #endif
 #include <sys/types.h>
+#ifndef __FreeBSD__
 #include <sys/statfs.h>
+#else
+#include <sys/param.h>
+#include <sys/mount.h>
+#define stat64 stat
+#define dirent64 dirent
+#endif
 #include <dirent.h>
+
 
 typedef struct {  
   unsigned size;  /* in bytes */

@@ -25,8 +25,8 @@ int kill(pid_t pid, int sig) {
   return -1;
 }
 
-int _setjmp (struct __jmp_buf_tag __env[1]) __attribute__((weak));
-int _setjmp (struct __jmp_buf_tag __env[1]) {
+int _setjmp (jmp_buf __env) __attribute__((weak));
+int _setjmp (jmp_buf __env) {
   klee_warning_once("ignoring");
   return 0;
 }
