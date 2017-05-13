@@ -424,34 +424,15 @@ endif()
 OPTION(ENABLE_TCMALLOC "Enable TCMalloc support" OFF)
 if (ENABLE_TCMALLOC)
   message(STATUS "TCMalloc support enabled")
-  set(TCMALLOC_HEADER "gperftools/malloc_extension.h")
-  check_include_file_cxx("${TCMALLOC_HEADER}" HAVE_GPERFTOOLS_MALLOC_EXTENSION_H)
-  if (${HAVE_GPERFTOOLS_MALLOC_EXTENSION_H})
-    find_library(TCMALLOC_LIBRARIES
-      NAMES tcmalloc tcmalloc_minimal
-      DOC "TCMalloc libraries"
-    )
-    if (NOT TCMALLOC_LIBRARIES)
-      message(FATAL_ERROR
-        "Found \"${TCMALLOC_HEADER}\" but could not find library")
-    endif()
-    list(APPEND KLEE_COMPONENT_EXTRA_LIBRARIES ${TCMALLOC_LIBRARIES})
-    if (("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang") OR ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU"))
-      # TCMalloc's documentation says its safest to pass these flags when
-      # building with gcc because gcc can optimize assuming its using its own
-      # malloc.
-      klee_component_add_cxx_flag(-fno-builtin-malloc REQUIRED)
-      klee_component_add_cxx_flag(-fno-builtin-calloc REQUIRED)
-      klee_component_add_cxx_flag(-fno-builtin-realloc REQUIRED)
-      klee_component_add_cxx_flag(-fno-builtin-free REQUIRED)
-    endif()
-  else()
-    message(FATAL_ERROR "Can't find \"${TCMALLOC_HEADER}\"")
+  include(UsePkgConfig)
+  PKGCONFIG(libtcmalloc TCMALLOC_INCLUDE_DIRS TCMALLOC_LIBRARY_DIRS TCMALLOC_LIBRARIES TCMALLOC_FLAGS)
+  if (NOT TCMALLOC_LIBRARIES OR NOT TCMALLOC_INCLUDE_DIRS)
+    message(FATAL_ERROR
+      "Could not find tcmalloc library, check pkg-config")
   endif()
-else()
-  unset(HAVE_GPERFTOOLS_MALLOC_EXTENSION_H)
-  unset(HAVE_GPERFTOOLS_MALLOC_EXTENSION_H CACHE)
-  message(STATUS "TCMalloc support disabled")
+  include_directories(${TCMALLOC_INCLUDE_DIRS})
+  list(APPEND KLEE_COMPONENT_EXTRA_LIBRARIES ${TCMALLOC_LIBRARIES})
+  set(HAVE_GPERFTOOLS_MALLOC_EXTENSION_H 1)
 endif()
 
 ################################################################################
