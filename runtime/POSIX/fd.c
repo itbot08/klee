@@ -9,7 +9,6 @@
 
 #define _LARGEFILE64_SOURCE
 #include "fd.h"
-#include "FreeBSD.h"
 
 #include <string.h>
 #include <stdio.h>
@@ -24,6 +23,7 @@
 #ifndef __FreeBSD__
 #include <sys/vfs.h>
 #else
+#include "FreeBSD.h"
 #define stat64 stat
 #endif
 #include <unistd.h>
@@ -947,7 +947,7 @@ int ioctl(int fd, unsigned long request, ...) {
         ts->c_oflag = 5;
         ts->c_cflag = 1215;
         ts->c_lflag = 35287;
-#ifndef __FreeBSD__
+#ifdef __GLIBC__
         ts->c_line = 0;
 #endif
         ts->c_cc[0] = '\x03';

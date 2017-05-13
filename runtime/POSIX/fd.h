@@ -24,7 +24,6 @@
 #endif
 #include <dirent.h>
 
-
 typedef struct {  
   unsigned size;  /* in bytes */
   char* contents;
